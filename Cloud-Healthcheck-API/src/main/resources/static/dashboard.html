@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cloud Healthcheck | BlackBoxerX</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+          background: #171717;
+          color: #23ff7f;
+          font-family: 'Fira Mono', 'Consolas', monospace;
+          margin: 0; padding: 0;
+        }
+        .container {
+          max-width: 680px;
+          margin: 50px auto 0 auto;
+          padding: 32px;
+          background: #23272c;
+          border-radius: 18px;
+          box-shadow: 0 0 12px #000a  ;
+        }
+        h1 {
+          text-align: center;
+          letter-spacing: 2px;
+          font-size: 2.2em;
+          margin-bottom: 8px;
+          color: #23ff7f;
+          text-shadow: 0 0 4px #23ff7f77;
+        }
+        .subtitle {
+          text-align: center;
+          font-size: 1em;
+          color: #aaa;
+          margin-bottom: 30px;
+        }
+        .input-urls {
+          width: 100%;
+          padding: 12px;
+          border: none;
+          border-radius: 7px;
+          margin-bottom: 20px;
+          font-size: 1.1em;
+          background: #101011;
+          color: #23ff7f;
+          box-shadow: 0 2px 8px #0004;
+          resize: vertical;
+        }
+        .btn {
+          padding: 12px 32px;
+          border: none;
+          background: #23ff7f;
+          color: #171717;
+          font-weight: bold;
+          border-radius: 7px;
+          cursor: pointer;
+          font-size: 1.1em;
+          margin-bottom: 18px;
+          transition: background 0.2s;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+          box-shadow: 0 0 5px #23ff7f88;
+        }
+        .btn:hover { background: #23df6f; }
+        table {
+          width: 100%;
+          margin-top: 24px;
+          border-collapse: collapse;
+          background: #151718;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 1px 7px #0007;
+        }
+        th, td {
+          padding: 11px 8px;
+          text-align: center;
+          font-size: 1.04em;
+          border-bottom: 1px solid #23272c;
+        }
+        th {
+          background: #23272c;
+          color: #23ff7f;
+          font-weight: bold;
+          letter-spacing: 1px;
+          text-shadow: 0 0 1px #23ff7f33;
+        }
+        tr:last-child td { border-bottom: none; }
+        .status-up { color: #23ff7f; font-weight: bold; }
+        .status-down { color: #ff235a; font-weight: bold; }
+        .latency-ok { color: #c7ff5a; }
+        .latency-high { color: #ffd23b; }
+        .error-msg { color: #ff2f3a; font-size: 0.93em; }
+        @media (max-width: 700px) {
+          .container { padding: 10px; margin: 0; }
+          table, thead, tbody, th, td, tr { display: block; }
+          th, td { text-align: left; border: none; }
+          tr { margin-bottom: 15px; }
+          th { background: none; }
+          td { padding: 6px 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Cloud Healthcheck</h1>
+    <div class="subtitle">Monitor any website in real time — <span style="color:#fff;">powered by <b>Java Spring</b></span></div>
+    <textarea class="input-urls" id="urls" rows="3" placeholder="Enter URLs to monitor (one per line)...">https://google.com
+https://github.com
+</textarea>
+    <button class="btn" onclick="checkSites()">Check Now</button>
+    <table id="result-table" style="display:none;">
+        <thead>
+        <tr>
+            <th>URL</th>
+            <th>Status</th>
+            <th>HTTP</th>
+            <th>Latency</th>
+            <th>Error</th>
+        </tr>
+        </thead>
+        <tbody id="results"></tbody>
+    </table>
+</div>
+<script>
+    async function checkSites() {
+      const urlsRaw = document.getElementById('urls').value.trim();
+      if (!urlsRaw) return alert('Type at least one URL');
+      const urls = urlsRaw.split('\n').map(u => u.trim()).filter(Boolean);
+      document.querySelector(".btn").innerText = "Checking...";
+      const response = await fetch('/api/health/check', {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({urls})
+      });
+      const data = await response.json();
+      renderResults(data);
+      document.querySelector(".btn").innerText = "Check Now";
+    }
+    function renderResults(data) {
+      const table = document.getElementById('result-table');
+      const tbody = document.getElementById('results');
+      tbody.innerHTML = '';
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        table.style.display = "none";
+        return;
+      }
+      data.forEach(row => {
+        const statusClass = row.up ? 'status-up' : 'status-down';
+        const latencyClass = row.latencyMs > 1000 ? 'latency-high' : 'latency-ok';
+        tbody.innerHTML += `
+          <tr>
+            <td>${row.url}</td>
+            <td class="${statusClass}">${row.up ? 'UP' : 'DOWN'}</td>
+            <td>${row.statusCode}</td>
+            <td class="${latencyClass}">${row.latencyMs} ms</td>
+            <td class="error-msg">${row.error ? row.error : ''}</td>
+          </tr>
+        `;
+      });
+      table.style.display = "table";
+    }
+</script>
+</body>
+</html>
