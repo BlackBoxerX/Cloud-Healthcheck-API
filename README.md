@@ -1,18 +1,22 @@
-# 🦾 Cloud Healthcheck API
+# 🦾 Cloud Integrity Check API
 
-API para monitoramento de status de sites em tempo real.  
-Feito em Java Spring Boot.  
+A simple API for real-time website status monitoring.  
+Built with Java Spring Boot.
 
-## Features
+---
 
-- Consulta de múltiplos sites por POST
-- Retorna status HTTP, latência e erros
-- Dashboard responsivo para visualizar resultados
-- Pronto para deploy local ou AWS
+## 🚀 Features
 
-## Como rodar
+- **Batch Website Check:** Query multiple websites at once via POST request
+- **Status Reporting:** Returns HTTP status, latency, and error details for each site
+- **Responsive Dashboard:** Visualize results in real time with a web dashboard
+- **Ready to Deploy:** Works locally or in the cloud (AWS, etc.)
 
-```sh
+---
+
+## ⚙️ How to Run
+
+```bash
 ./mvnw spring-boot:run
-# ou
+# or
 mvn spring-boot:run
